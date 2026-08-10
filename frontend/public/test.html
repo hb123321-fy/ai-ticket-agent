@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>测试后端连接</title>
+</head>
+<body>
+    <h1>测试页面</h1>
+    <button onclick="fetchTickets()">获取工单</button>
+    <pre id="result">点击按钮查看结果</pre>
+
+    <script>
+    async function fetchTickets() {
+        try {
+            const res = await fetch('http://127.0.0.1:8000/tickets?user_id=1');
+            const data = await res.json();
+            document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+            document.getElementById('result').textContent = '错误: ' + e.message;
+        }
+    }
+    </script>
+</body>
+</html>
