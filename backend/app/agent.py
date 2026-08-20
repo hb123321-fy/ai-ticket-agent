@@ -1,6 +1,6 @@
 from app.db import fake_db
 from app.models import Ticket
-
+from app.audit import log_audit_event
 class TicketAgent:
     def __init__(self, ticket_id: int):
         self.ticket_id = ticket_id
@@ -134,6 +134,12 @@ class TicketAgent:
                 "reason": "根据知识库，502通常由新版本发布导致"
             }
             self.state = "WAITING_FOR_APPROVAL"
+            log_audit_event(
+                ticket_id=self.ticket_id,
+                event_type="PROCESS",
+                actor="system",
+                details={"state": self.state, "action": self.proposed_action}
+            )
             return {
                 "state": self.state,
                 "message": "根据分析，建议回滚测试环境发布。\n依据：知识库文章《测试环境 API 返回 502 的排查方法》\n风险：回滚可能导致新功能不可用\n需要人工确认：是",
@@ -174,6 +180,12 @@ class TicketAgent:
         if self.proposed_action and self.proposed_action.get("need_approval"):
             self.state = "EXECUTING"
             return self._execute()
+        log_audit_event(
+            ticket_id=self.ticket_id,
+            event_type="APPROVE",
+            actor="engineer",
+            details={"action": self.proposed_action}
+        )
         return {"error": "没有待批准的操作"}
 
     def _execute(self):

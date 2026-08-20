@@ -12,8 +12,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 注册工单路由
 app.include_router(tickets_router)
+
+@app.get("/env")
+def get_env():
+    return {"env": "development"}
 
 @app.get("/")
 def root():
